@@ -1,4 +1,4 @@
-import { Undo2, Trash2, CheckCircle, RotateCcw, Layers } from 'lucide-react';
+import { Undo2, Trash2, CheckCircle, RotateCcw, Layers, Zap } from 'lucide-react';
 import { useGameStore } from '@/store/gameStore';
 import { getLevelById } from '@/data/levels';
 
@@ -11,6 +11,8 @@ export default function TopBar() {
     checkRules,
     resetCurrentLevel,
     setLevelSelectorVisible,
+    autoCheck,
+    toggleAutoCheck,
   } = useGameStore();
   const level = getLevelById(currentLevelId);
 
@@ -67,6 +69,17 @@ export default function TopBar() {
           >
             <RotateCcw size={18} />
             <span>重置</span>
+          </button>
+          <button
+            onClick={toggleAutoCheck}
+            className={`flex items-center gap-1.5 px-4 py-2 rounded-xl transition-all border backdrop-blur-sm ${
+              autoCheck
+                ? 'bg-[#4CAF50]/80 hover:bg-[#66BB6A]/80 text-white border-[#388E3C]/50 shadow-[0_2px_0_#2E7D32]'
+                : 'bg-white/15 hover:bg-white/25 border-white/20'
+            }`}
+          >
+            <Zap size={18} className={autoCheck ? 'fill-current' : ''} />
+            <span>实时校验</span>
           </button>
           <button
             onClick={checkRules}

@@ -47,7 +47,7 @@ export function checkSmallOnTop(
       if (!cell.itemId) continue;
       const item = getItemById(cell.itemId);
       if (!item) continue;
-      if (item.category === 'fragrance' && item.size === 'small') {
+      if (item.size === 'small') {
         if (r >= topEnd) {
           violations.push({
             row: r,
@@ -135,6 +135,27 @@ export function validateLayout(
     violations.push(...ruleViolations);
   });
 
+  const hotViolationKeys = new Set<string>();
+  violations.forEach((v) => {
+    if (v.ruleId === 'r3') {
+      hotViolationKeys.add(`${v.row},${v.col}`);
+    }
+  });
+
+  const filteredViolations = violations.filter((v) => {
+    if (v.ruleId === 'r1' && hotViolationKeys.has(`${v.row},${v.col}`)) {
+      return false;
+    }
+    return true;
+  });
+
+  level.rules.forEach((rule) => {
+    if (rule.type === 'large_on_bottom') {
+      const remaining = filteredViolations.filter((v) => v.ruleId === 'r1');
+      rulePassed[rule.id] = remaining.length === 0;
+    }
+  });
+
   const allPassed = Object.values(rulePassed).every(Boolean);
-  return { violations, rulePassed, allPassed };
+  return { violations: filteredViolations, rulePassed, allPassed };
 }

@@ -63,4 +63,5 @@ export interface GameStateShape {
   isPassed: boolean;
   passedLevels: number[];
   showLevelSelector: boolean;
+  autoCheck: boolean;
 }

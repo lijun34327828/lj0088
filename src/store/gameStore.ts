@@ -84,6 +84,7 @@ export const useGameStore = create<
     nextLevel: () => void;
     setLevelSelectorVisible: (v: boolean) => void;
     resetCurrentLevel: () => void;
+    toggleAutoCheck: () => void;
     getViolationsAt: (row: number, col: number) => Violation[];
   }
 >((set, get) => {
@@ -100,6 +101,7 @@ export const useGameStore = create<
   passedLevels: loadPassedLevels(),
   showLevelSelector: false,
   lastRule: initialLevel,
+  autoCheck: false,
 
   placeItem(row, col, itemId) {
     const state = get();
@@ -129,6 +131,10 @@ export const useGameStore = create<
       rulePassed: {},
       isPassed: false,
     });
+
+    if (get().autoCheck) {
+      get().checkRules();
+    }
   },
 
   removeItem(row, col) {
@@ -150,6 +156,10 @@ export const useGameStore = create<
       rulePassed: {},
       isPassed: false,
     });
+
+    if (get().autoCheck) {
+      get().checkRules();
+    }
   },
 
   moveItem(fromRow, fromCol, toRow, toCol) {
@@ -176,6 +186,10 @@ export const useGameStore = create<
       rulePassed: {},
       isPassed: false,
     });
+
+    if (get().autoCheck) {
+      get().checkRules();
+    }
   },
 
   undo() {
@@ -251,6 +265,14 @@ export const useGameStore = create<
 
   setLevelSelectorVisible(v) {
     set({ showLevelSelector: v });
+  },
+
+  toggleAutoCheck() {
+    const newVal = !get().autoCheck;
+    set({ autoCheck: newVal });
+    if (newVal) {
+      get().checkRules();
+    }
   },
 
   getViolationsAt(row, col) {
