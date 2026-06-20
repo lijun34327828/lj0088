@@ -1,9 +1,16 @@
-import { X, Check, Star, Grid3x3 } from 'lucide-react';
+import { X, Check, Star, Grid3x3, Trophy } from 'lucide-react';
 import { useGameStore } from '@/store/gameStore';
 import { levels } from '@/data/levels';
 
+function formatTime(seconds: number | undefined): string {
+  if (seconds === undefined) return '—';
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+}
+
 export default function LevelSelector() {
-  const { showLevelSelector, setLevelSelectorVisible, currentLevelId, passedLevels, selectLevel } = useGameStore();
+  const { showLevelSelector, setLevelSelectorVisible, currentLevelId, passedLevels, selectLevel, bestTimes } = useGameStore();
 
   if (!showLevelSelector) return null;
 
@@ -40,6 +47,7 @@ export default function LevelSelector() {
             const passed = passedLevels.includes(lv.id);
             const current = lv.id === currentLevelId;
             const stars = lv.difficulty;
+            const best = bestTimes[lv.id];
             return (
               <button
                 key={lv.id}
@@ -87,6 +95,15 @@ export default function LevelSelector() {
                     <div key={r.id}>📌 {r.description}</div>
                   )).slice(0, 2)}
                   {lv.rules.length > 2 && <div>…共{lv.rules.length}条规范</div>}
+                </div>
+                <div className={`mt-2 pt-2 border-t border-dashed border-[#8B6914]/20 flex items-center justify-between text-[11px] font-semibold`}>
+                  <div className={`flex items-center gap-1 ${best !== undefined ? 'text-[#C23B22]' : 'text-[#8B6914]/50'}`}>
+                    <Trophy size={12} className={best !== undefined ? 'fill-current' : ''} />
+                    <span>最佳用时</span>
+                  </div>
+                  <span className={`font-mono font-black text-sm ${best !== undefined ? 'text-[#C23B22]' : 'text-[#8B6914]/40'}`}>
+                    {formatTime(best)}
+                  </span>
                 </div>
               </button>
             );

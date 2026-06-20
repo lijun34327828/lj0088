@@ -49,7 +49,7 @@ function GridCell(props: GridCellProps) {
 
   return (
     <div
-      className={`relative group rounded-lg transition-all duration-150
+      className={`relative group rounded-lg transition-all duration-150 w-full h-full
         ${isVisualZone ? 'bg-gradient-to-br from-[#FFF4CC]/60 to-[#FFE59B]/60 ring-2 ring-[#E4B84A]/60 ring-inset' : 'bg-[#FFF8E7]/50'}
         ${isDragOver ? 'ring-4 ring-[#4F7942] scale-105 z-10 bg-[#D8F3DC]/70' : ''}
         ${isViolation ? 'animate-pulse-violation' : ''}
@@ -81,7 +81,7 @@ function GridCell(props: GridCellProps) {
             `}
             title={`${item.name}（双击移回库存）`}
           >
-            <span className="text-2xl sm:text-3xl drop-shadow-sm leading-none">{item.emoji}</span>
+            <span className="text-2xl sm:text-3xl drop-shadow-sm leading-none" draggable={false}>{item.emoji}</span>
             <span className="text-[10px] mt-0.5 font-bold truncate max-w-full px-1 opacity-95">
               {item.name}
             </span>

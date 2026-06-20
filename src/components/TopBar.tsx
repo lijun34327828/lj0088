@@ -1,6 +1,13 @@
-import { Undo2, Trash2, CheckCircle, RotateCcw, Layers, Zap } from 'lucide-react';
+import { useEffect } from 'react';
+import { Undo2, Trash2, CheckCircle, RotateCcw, Layers, Zap, Timer } from 'lucide-react';
 import { useGameStore } from '@/store/gameStore';
 import { getLevelById } from '@/data/levels';
+
+function formatTime(seconds: number): string {
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+}
 
 export default function TopBar() {
   const {
@@ -13,8 +20,19 @@ export default function TopBar() {
     setLevelSelectorVisible,
     autoCheck,
     toggleAutoCheck,
+    elapsed,
+    tickTimer,
+    isPassed,
   } = useGameStore();
   const level = getLevelById(currentLevelId);
+
+  useEffect(() => {
+    if (isPassed) return;
+    const id = setInterval(() => {
+      tickTimer();
+    }, 1000);
+    return () => clearInterval(id);
+  }, [tickTimer, isPassed]);
 
   const stars = '★'.repeat(level?.difficulty || 1) + '☆'.repeat(3 - (level?.difficulty || 1));
 
@@ -43,6 +61,12 @@ export default function TopBar() {
         </div>
 
         <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 px-4 py-2 bg-white/15 rounded-xl border border-white/20 backdrop-blur-sm">
+            <Timer size={18} className={isPassed ? 'text-[#4CAF50]' : ''} />
+            <span className={`font-mono text-lg font-bold tracking-wider ${isPassed ? 'text-[#8BC34A]' : ''}`}>
+              {formatTime(elapsed)}
+            </span>
+          </div>
           <button
             onClick={undo}
             disabled={history.length === 0}

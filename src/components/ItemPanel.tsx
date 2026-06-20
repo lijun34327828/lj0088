@@ -67,7 +67,7 @@ export function ItemCard({ itemId, count }: ItemCardProps) {
       style={cardStyle}
     >
       <div className="relative w-14 h-14 flex items-center justify-center rounded-xl bg-white/60 border border-white/70 shadow-inner">
-        <span className="text-3xl drop-shadow-sm">{item.emoji}</span>
+        <span className="text-3xl drop-shadow-sm" draggable={false}>{item.emoji}</span>
         {item.isHot && (
           <span className="absolute -top-1.5 -right-1.5 text-xs bg-[#C23B22] text-white rounded-full px-1.5 py-0.5 shadow-md font-bold animate-pulse">
             HOT

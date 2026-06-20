@@ -34,6 +34,7 @@ function cloneGrid(grid: GridCellData[][]): GridCellData[][] {
 }
 
 const STORAGE_KEY = 'craft_shelf_passed_levels_v1';
+const BEST_TIMES_KEY = 'craft_shelf_best_times_v1';
 
 function loadPassedLevels(): number[] {
   try {
@@ -49,6 +50,32 @@ function loadPassedLevels(): number[] {
 function savePassedLevels(ids: number[]): void {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(ids));
+  } catch {
+    /* ignore */
+  }
+}
+
+function loadBestTimes(): Record<number, number> {
+  try {
+    const raw = localStorage.getItem(BEST_TIMES_KEY);
+    if (!raw) return {};
+    const parsed = JSON.parse(raw);
+    const result: Record<number, number> = {};
+    Object.entries(parsed).forEach(([k, v]) => {
+      const key = Number(k);
+      if (!Number.isNaN(key) && typeof v === 'number') {
+        result[key] = v;
+      }
+    });
+    return result;
+  } catch {
+    return {};
+  }
+}
+
+function saveBestTimes(times: Record<number, number>): void {
+  try {
+    localStorage.setItem(BEST_TIMES_KEY, JSON.stringify(times));
   } catch {
     /* ignore */
   }
@@ -86,6 +113,7 @@ export const useGameStore = create<
     resetCurrentLevel: () => void;
     toggleAutoCheck: () => void;
     getViolationsAt: (row: number, col: number) => Violation[];
+    tickTimer: () => void;
   }
 >((set, get) => {
   const api: StoreApi = { getState: get as any, setState: set as any };
@@ -102,6 +130,10 @@ export const useGameStore = create<
   showLevelSelector: false,
   lastRule: initialLevel,
   autoCheck: false,
+  startTime: Date.now(),
+  elapsed: 0,
+  bestTimes: loadBestTimes(),
+  isNewRecord: false,
 
   placeItem(row, col, itemId) {
     const state = get();
@@ -130,6 +162,7 @@ export const useGameStore = create<
       violations: [],
       rulePassed: {},
       isPassed: false,
+      isNewRecord: false,
     });
 
     if (get().autoCheck) {
@@ -155,6 +188,7 @@ export const useGameStore = create<
       violations: [],
       rulePassed: {},
       isPassed: false,
+      isNewRecord: false,
     });
 
     if (get().autoCheck) {
@@ -185,6 +219,7 @@ export const useGameStore = create<
       violations: [],
       rulePassed: {},
       isPassed: false,
+      isNewRecord: false,
     });
 
     if (get().autoCheck) {
@@ -203,6 +238,7 @@ export const useGameStore = create<
       violations: [],
       rulePassed: {},
       isPassed: false,
+      isNewRecord: false,
     });
   },
 
@@ -217,7 +253,16 @@ export const useGameStore = create<
       violations: [],
       rulePassed: {},
       isPassed: false,
+      isNewRecord: false,
     });
+  },
+
+  tickTimer() {
+    const state = get();
+    if (state.isPassed || state.startTime === null) return;
+    const now = Date.now();
+    const elapsed = Math.floor((now - state.startTime) / 1000);
+    set({ elapsed });
   },
 
   checkRules() {
@@ -227,11 +272,29 @@ export const useGameStore = create<
     const result = validateLayout(level, state.grid, state.inventory);
     const newPassed = result.allPassed ? [...new Set([...state.passedLevels, level.id])] : state.passedLevels;
     if (result.allPassed) savePassedLevels(newPassed);
+
+    let newBestTimes = state.bestTimes;
+    let isNewRecord = false;
+    let finalElapsed = state.elapsed;
+
+    if (result.allPassed && state.startTime !== null) {
+      finalElapsed = Math.floor((Date.now() - state.startTime) / 1000);
+      const currentBest = state.bestTimes[level.id];
+      if (currentBest === undefined || finalElapsed < currentBest) {
+        newBestTimes = { ...state.bestTimes, [level.id]: finalElapsed };
+        saveBestTimes(newBestTimes);
+        isNewRecord = true;
+      }
+    }
+
     set({
       violations: result.violations,
       rulePassed: result.rulePassed,
       isPassed: result.allPassed,
       passedLevels: newPassed,
+      elapsed: finalElapsed,
+      bestTimes: newBestTimes,
+      isNewRecord,
     });
   },
 
@@ -248,6 +311,9 @@ export const useGameStore = create<
       isPassed: false,
       lastRule: level,
       showLevelSelector: false,
+      startTime: Date.now(),
+      elapsed: 0,
+      isNewRecord: false,
     });
   },
 

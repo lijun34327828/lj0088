@@ -1,9 +1,15 @@
-import { PartyPopper, ArrowRight, RotateCcw, Award } from 'lucide-react';
+import { PartyPopper, ArrowRight, RotateCcw, Award, Timer, Crown } from 'lucide-react';
 import { useGameStore } from '@/store/gameStore';
 import { levels, getLevelById } from '@/data/levels';
 
+function formatTime(seconds: number): string {
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+}
+
 export default function PassModal() {
-  const { isPassed, currentLevelId, nextLevel, resetCurrentLevel, violations } = useGameStore();
+  const { isPassed, currentLevelId, nextLevel, resetCurrentLevel, violations, elapsed, isNewRecord, bestTimes } = useGameStore();
   const level = getLevelById(currentLevelId);
 
   if (!isPassed || !level) return null;
@@ -47,6 +53,12 @@ export default function PassModal() {
           <div className="mt-2 text-[#6B4F14] font-semibold">
             本关陈列布局完全符合规范，货架美学满分 ✨
           </div>
+          {isNewRecord && (
+            <div className="mt-3 inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gradient-to-r from-[#FF8FAB] to-[#FF6B9D] text-white font-black text-sm shadow-lg animate-pulse">
+              <Crown size={16} />
+              🏆 刷新记录！新纪录诞生
+            </div>
+          )}
         </div>
 
         <div className="mx-6 mb-4 p-5 rounded-2xl bg-white/80 border-2 border-[#C23B22]/30 shadow-inner">
@@ -75,7 +87,7 @@ export default function PassModal() {
               </div>
             ))}
           </div>
-          <div className="grid grid-cols-3 gap-3 text-center text-xs">
+          <div className="grid grid-cols-2 gap-3 text-center text-xs mb-3">
             <div className="p-2 rounded-xl bg-[#FFF8E7]">
               <div className="text-[#6B4F14] font-semibold">关卡</div>
               <div className="text-lg font-black text-[#C23B22]">{level.id}</div>
@@ -84,6 +96,24 @@ export default function PassModal() {
               <div className="text-[#6B4F14] font-semibold">陈列商品</div>
               <div className="text-lg font-black text-[#4F7942]">{totalItems}</div>
             </div>
+            <div className={`p-2 rounded-xl ${isNewRecord ? 'bg-gradient-to-br from-[#FFE59B] to-[#FFD56B] ring-2 ring-[#C23B22]/50' : 'bg-[#FFF8E7]'}`}>
+              <div className="text-[#6B4F14] font-semibold flex items-center justify-center gap-1">
+                <Timer size={12} /> 本次用时
+              </div>
+              <div className={`text-lg font-black ${isNewRecord ? 'text-[#C23B22]' : 'text-[#8B6914]'}`}>
+                {formatTime(elapsed)}
+              </div>
+            </div>
+            <div className="p-2 rounded-xl bg-[#FFF8E7]">
+              <div className="text-[#6B4F14] font-semibold flex items-center justify-center gap-1">
+                <Crown size={12} /> 历史最佳
+              </div>
+              <div className="text-lg font-black text-[#8B6914]">
+                {bestTimes[level.id] !== undefined ? formatTime(bestTimes[level.id]) : '—'}
+              </div>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 gap-3 text-center text-xs">
             <div className="p-2 rounded-xl bg-[#FFF8E7]">
               <div className="text-[#6B4F14] font-semibold">综合得分</div>
               <div className="text-lg font-black text-[#8B6914]">{score}</div>

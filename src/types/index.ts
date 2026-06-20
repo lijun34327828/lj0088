@@ -64,4 +64,8 @@ export interface GameStateShape {
   passedLevels: number[];
   showLevelSelector: boolean;
   autoCheck: boolean;
+  startTime: number | null;
+  elapsed: number;
+  bestTimes: Record<number, number>;
+  isNewRecord: boolean;
 }
